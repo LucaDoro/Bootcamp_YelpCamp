@@ -9,10 +9,15 @@ module.exports.renderNewForm = (req, res) => {
   res.render("campgrounds/new");
 };
 module.exports.createCampground = async (req, res) => {
-  // if (!req.body.campground)throw new ExpressError("Invalid Campground Data", 400);
+  //? Initialize a new campground with the data from the form
   const campground = new Campground(req.body.campground);
+  //? req.files is populated by multer middleware, which handles file uploads
+  campground.images = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+  //? Set the author of the campground to the currently logged-in user
+  //? req.user is populated by passport middleware, which authenticates the user
   campground.author = req.user._id; // req.user bcs of "isLoggedIn" and passport
   await campground.save();
+  console.log(campground);
   req.flash("success", "Successfully made a new campground");
   res.redirect(`/campgrounds/${campground._id}`);
 };

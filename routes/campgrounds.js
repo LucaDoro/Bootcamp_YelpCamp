@@ -1,15 +1,23 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
 const express = require("express");
 const router = express.Router();
 const campgrounds = require("../controllers/campgrounds");
 const catchAsync = require("../helpers/catchAsync");
 const { isLoggedIn, isAuthor, validateCampground } = require("../middleware.js");
+const multer = require("multer");
+const { storage } = require("../cloudinary");
+const upload = multer({ storage });
 
 const Campground = require("../models/campground");
 
+//? req.files is now populated with the uploaded files coming from cloudinary
 router
   .route("/")
   .get(catchAsync(campgrounds.index))
-  .post(isLoggedIn, validateCampground, catchAsync(campgrounds.createCampground));
+  .post(isLoggedIn, upload.array("image"), validateCampground, catchAsync(campgrounds.createCampground));
 // to ensure not getting in via Postman post route and creating campground without logging in
 
 router.get("/new", isLoggedIn, campgrounds.renderNewForm);
